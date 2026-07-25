@@ -21,7 +21,7 @@ const app = express();
 app.use(express.json());
 
 const sourceCode = `
-function bubbleSort(arr) {
+function bubbleSort(arr, k , ...nums) {
   const result = [...arr]; // Orijinal diziyi değiştirmemek için kopyala
 
   for (let i = 0; i < result.length - 1; i++) {
