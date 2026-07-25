@@ -27,7 +27,6 @@ const sourceCode = data;
 
 const context: ParseContext = {
   id: "example-id",
-  repoId: "example-repo-id",
   fileAbsolutePath: "example-file-path",
   fileRelativePath: "example-file-relative-path",
   lineCount: 10,

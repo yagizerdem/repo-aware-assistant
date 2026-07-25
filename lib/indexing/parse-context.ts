@@ -1,6 +1,5 @@
 interface ParseContext {
   id: string;
-  repoId: string;
   fileAbsolutePath: string;
   fileRelativePath: string;
   fileName: string;

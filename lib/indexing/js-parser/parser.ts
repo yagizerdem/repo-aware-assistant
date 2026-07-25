@@ -52,7 +52,6 @@ class Parser {
       sizeInBytes: Buffer.byteLength(sourceCode, "utf-8"),
       // contentHash: "", // You can compute a hash of the content if needed
       nodeId: uuidv4(), // Generate a unique ID for the file node
-      repoId: this.parseContext.repoId,
       startLine: 0,
       endLine: rootNode.endPosition.row,
     };
@@ -111,7 +110,6 @@ class Parser {
           treeSitterType: child.type,
           sourceText: child.text,
           nodeKind: "unknown",
-          repoId: this.parseContext.repoId,
           startLine: child.startPosition.row,
           parentNodeId: parentNode.nodeId,
           parentTreeSitterType: node.type,
@@ -166,7 +164,6 @@ class Parser {
 
             specifiers.push({
               nodeId: uuidv4(),
-              repoId: this.parseContext.repoId,
               filePath: this.parseContext.fileRelativePath,
               language: "javascript",
               nodeKind: "importSpecifier",
@@ -183,7 +180,6 @@ class Parser {
 
     return {
       nodeId: uuidv4(),
-      repoId: this.parseContext.repoId,
       filePath: this.parseContext.fileRelativePath,
       language: "javascript",
       nodeKind: "import",
@@ -227,7 +223,6 @@ class Parser {
 
         specifiers.push({
           nodeId: uuidv4(),
-          repoId: this.parseContext.repoId,
           filePath: this.parseContext.fileRelativePath,
           language: "javascript",
           nodeKind: "exportSpecifier",
@@ -251,7 +246,6 @@ class Parser {
 
     return {
       nodeId: uuidv4(),
-      repoId: this.parseContext.repoId,
       filePath: this.parseContext.fileRelativePath,
       language: "javascript",
       nodeKind: "export",
@@ -283,7 +277,6 @@ class Parser {
     const classNode: ClassNode = {
       nodeId: uuidv4(),
       nodeKind: "class",
-      repoId: this.parseContext.repoId,
       filePath: this.parseContext.fileRelativePath,
       language: "javascript",
       parentNodeId: parentNode.nodeId,
@@ -353,7 +346,6 @@ class Parser {
 
     const variableDeclarationNode: VariableDeclarationNode = {
       nodeId: uuidv4(),
-      repoId: this.parseContext.repoId,
       filePath: this.parseContext.fileRelativePath,
       language: "javascript",
       nodeKind: "variableDeclaration",
@@ -399,7 +391,6 @@ class Parser {
 
     const declaratorNode: VariableDeclaratorNode = {
       nodeId: uuidv4(),
-      repoId: this.parseContext.repoId,
       filePath: this.parseContext.fileRelativePath,
       language: "javascript",
       nodeKind: "variableDeclarator",
@@ -427,7 +418,6 @@ class Parser {
       declarator: declaratorNode,
       requireNode: {
         nodeId: uuidv4(),
-        repoId: this.parseContext.repoId,
         filePath: this.parseContext.fileRelativePath,
         language: "javascript",
         nodeKind: "require",
@@ -506,7 +496,6 @@ class Parser {
     const { v4: uuidv4 } = await import("uuid");
     const fnNode: Partial<FunctionNode> = {
       nodeId: uuidv4(),
-      repoId: this.parseContext?.repoId,
       parentNodeId: parentNode.nodeId,
       endLine: node.endPosition.row,
       startLine: node.startPosition.row,
@@ -545,7 +534,6 @@ class Parser {
 
     return {
       nodeId: uuidv4(),
-      repoId: this.parseContext.repoId,
       filePath: this.parseContext.fileRelativePath,
       language: "javascript",
       parentNodeId: classNode.nodeId,
@@ -586,7 +574,6 @@ class Parser {
       filePath: this.parseContext.fileRelativePath,
       language: "javascript",
       nodeId: uuidv4(),
-      repoId: this.parseContext.repoId,
       nodeKind: "property",
       startLine: node.startPosition.row,
       endLine: node.endPosition.row,
@@ -608,7 +595,6 @@ class Parser {
           language: "javascript",
           nodeKind: "parameter",
           nodeId: uuidv4(),
-          repoId: this.parseContext.repoId,
           startLine: param.startPosition.row,
           endLine: param.endPosition.row,
         });
@@ -627,7 +613,6 @@ class Parser {
             filePath: this.parseContext.fileRelativePath,
             language: "javascript",
             nodeId: uuidv4(),
-            repoId: this.parseContext.repoId,
             nodeKind: "parameter",
             startLine: param.startPosition.row,
             endLine: param.endPosition.row,
@@ -647,7 +632,6 @@ class Parser {
             filePath: this.parseContext.fileRelativePath,
             language: "javascript",
             nodeId: uuidv4(),
-            repoId: this.parseContext.repoId,
             nodeKind: "parameter",
             startLine: param.startPosition.row,
             endLine: param.endPosition.row,
@@ -663,7 +647,6 @@ class Parser {
           filePath: this.parseContext.fileRelativePath,
           language: "javascript",
           nodeId: uuidv4(),
-          repoId: this.parseContext.repoId,
           nodeKind: "parameter",
           startLine: param.startPosition.row,
           endLine: param.endPosition.row,
@@ -682,7 +665,6 @@ class Parser {
     const statementNode: StatementNode = {
       nodeId: uuidv4(),
       language: "javascript",
-      repoId: this.parseContext.repoId,
       filePath: this.parseContext.fileRelativePath,
       parentNodeId: parentNode.nodeId,
       nodeKind: "statement",
