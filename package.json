@@ -1,0 +1,17 @@
+{
+  "name": "eliarai_",
+  "version": "1.0.0",
+  "description": "",
+  "type": "commonjs",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^5.2.1",
+    "tree-sitter-javascript": "^0.25.0"
+  }
+}
