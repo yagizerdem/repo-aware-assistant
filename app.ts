@@ -48,16 +48,37 @@ const numbers = [5, 1, 4, 2, 8];
 
 console.log(bubbleSort(numbers)); // [1, 2, 4, 5, 8]
 console.log(numbers);             // [5, 1, 4, 2, 8]
-`.trim();
 
-const parser = new JsParser();
+class Test {
+  constructor() {
+    this.name = "Test";
+  }
+
+  greet() {
+    console.log("Hello from Test class!");
+  }
+}
+
+`.trim();
 
 const context: ParseContext = {
   id: "example-id",
   repoId: "example-repo-id",
-  filePath: "example-file-path",
+  fileAbsolutePath: "example-file-path",
+  fileRelativePath: "example-file-relative-path",
+  lineCount: 10,
+  sizeInBytes: 10,
+  fileName: "example-file-name",
+  fileContent: sourceCode,
 };
 
-parser.parse(sourceCode, context);
+const parser = new JsParser(context);
+
+async function runParser() {
+  await parser.parse();
+  console.log("Parsed IR Nodes:", parser.irNodes);
+}
+
+runParser();
 
 export { app };

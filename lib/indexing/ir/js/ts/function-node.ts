@@ -1,13 +1,11 @@
-import { TypeReference } from "../../types/type-referance";
-import { SupportedLanguage } from "../../types/supported-language";
+import { TypeReference } from "../../../../types/type-referance";
+import { SupportedLanguage } from "../../../../types/supported-language";
 import { ParameterNode } from "./parameter-node";
-import { LanguageSpecificFunctionData } from "./language-specific-function-data";
+import { LanguageSpecificFunctionData } from "../../common/language-specific-function-data";
+import { AbstractNode } from "../../common/abstract-node";
 
-interface FunctionNode {
-  nodeId: string;
-  repoId: string;
-
-  kind: "function" | "method" | "constructor";
+interface FunctionNode extends AbstractNode {
+  nodeKind: "function" | "method" | "constructor";
 
   name: string;
   qualifiedName: string;
