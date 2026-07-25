@@ -1,7 +1,11 @@
-const { spawn } = require("node:child_process");
-const { access, constants, rm } = require("node:fs/promises");
+import { spawn, type SpawnOptions } from "node:child_process";
+import { access, constants, rm } from "node:fs/promises";
 
-async function spawnWrapper(executable, args, options) {
+async function spawnWrapper(
+  executable: string,
+  args: string[],
+  options: SpawnOptions,
+): Promise<void> {
   return new Promise((resolve, reject) => {
     try {
       const child = spawn(executable, args, options);
@@ -30,11 +34,14 @@ async function spawnWrapper(executable, args, options) {
   });
 }
 
-async function gitWrapper(args, options) {
+async function gitWrapper(
+  args: string[],
+  options: SpawnOptions,
+): Promise<void> {
   return spawnWrapper("git", args, options);
 }
 
-async function checkEntryExists(path) {
+async function checkEntryExists(path: string): Promise<boolean> {
   try {
     // F_OK tests if the file/directory is visible to the process
     await access(path, constants.F_OK);
@@ -44,21 +51,24 @@ async function checkEntryExists(path) {
   }
 }
 
-async function rmFileSystemEntry(path) {
+async function rmFileSystemEntry(path: string): Promise<void> {
   await rm(path, { recursive: true, force: true });
 }
 
-async function cloneRepository(repositoryUrl, targetDirectory) {
+async function cloneRepository(
+  repositoryUrl: string,
+  targetDirectory: string,
+): Promise<void> {
   if (await checkEntryExists(targetDirectory)) {
     await rmFileSystemEntry(targetDirectory);
   }
 
   const args = ["clone", "--depth", "1", repositoryUrl, targetDirectory];
-  const options = {
+  const options: SpawnOptions = {
     stdio: "inherit",
   };
 
   return gitWrapper(args, options);
 }
 
-module.exports = { cloneRepository, gitWrapper };
+export { cloneRepository, gitWrapper };

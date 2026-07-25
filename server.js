@@ -1,10 +1,4 @@
-const express = require("express");
-
-const app = express();
-const PORT = process.env.PORT || 3000;
-
-// Middleware to parse incoming JSON payloads
-app.use(express.json());
+const { app } = require("./app");
 
 app.get("/", (req, res) => {
   res.json({
@@ -13,6 +7,8 @@ app.get("/", (req, res) => {
   });
 });
 
-app.listen(PORT, () => {
-  console.log(`Server effectively running on port: http://localhost:${PORT}`);
+app.listen(process.env.PORT || 3000, () => {
+  console.log(
+    `Server effectively running on port: http://localhost:${process.env.PORT || 3000}`,
+  );
 });
