@@ -20,7 +20,8 @@
     "tree-sitter": "^0.25.0",
     "tree-sitter-javascript": "^0.25.0",
     "tsc-watch": "^7.2.1",
-    "typescript": "^7.0.2"
+    "typescript": "^7.0.2",
+    "uuid": "^14.0.1"
   },
   "allowScripts": {
     "tree-sitter@0.25.0": true,

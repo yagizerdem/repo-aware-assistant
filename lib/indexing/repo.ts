@@ -6,19 +6,22 @@ interface AllowedFile {
   parentPath: string;
   absolutePath: string;
   extension: string;
+  relativePath: string;
 }
 
 async function getAllowedFiles(
-  baseDir: string,
+  basePath: string,
+  currentDir: string,
   allowedExtensions: readonly string[] = [".js", ".ts"],
 ): Promise<AllowedFile[]> {
-  const rootPath = path.resolve(baseDir);
+  const rootPath = path.resolve(currentDir);
   const entries = await fs.readdir(rootPath, { withFileTypes: true });
   const files: AllowedFile[] = [];
 
   for (const entry of entries) {
     if (entry.isDirectory()) {
       const subDirFiles = await getAllowedFiles(
+        basePath,
         path.join(rootPath, entry.name),
         allowedExtensions,
       );
@@ -32,7 +35,18 @@ async function getAllowedFiles(
       files.push({
         name: entry.name,
         parentPath: rootPath,
-        absolutePath: path.join(rootPath, entry.name),
+        absolutePath: path.normalize(
+          path.join(rootPath, entry.name).split(path.sep).join(path.posix.sep),
+        ),
+        relativePath: path.normalize(
+          path.relative(
+            basePath,
+            path
+              .join(rootPath, entry.name)
+              .split(path.sep)
+              .join(path.posix.sep),
+          ),
+        ),
         extension: path.extname(entry.name),
       });
     }
