@@ -4,6 +4,7 @@ import { Parser as JsParser } from "./lib/indexing/js-parser/parser";
 import { ParseContext } from "./lib/indexing/parse-context";
 import { getAllowedFiles } from "./lib/indexing/repo";
 import { getFileSize, getLineCount } from "./lib/util/file-util";
+import fs from "fs";
 
 // getAllowedFiles("./dev/null", "./dev/null", [".js", ".ts"]).then(
 //   async (files) => {
@@ -20,46 +21,9 @@ const app = express();
 // Middleware to parse incoming JSON payloads
 app.use(express.json());
 
-const sourceCode = `
-function bubbleSort(arr, k , ...nums) {
-  const result = [...arr]; // Orijinal diziyi değiştirmemek için kopyala
+const data = fs.readFileSync("./resources/sample_js_program.txt", "utf-8");
 
-  for (let i = 0; i < result.length - 1; i++) {
-    let swapped = false;
-
-    for (let j = 0; j < result.length - 1 - i; j++) {
-      if (result[j] > result[j + 1]) {
-        [result[j], result[j + 1]] = [result[j + 1], result[j]];
-        swapped = true;
-      }
-    }
-
-    // Bu turda hiç yer değiştirme olmadıysa dizi zaten sıralıdır.
-    if (!swapped) {
-      break;
-    }
-  }
-
-  return result;
-}
-
-// Örnek kullanım
-const numbers = [5, 1, 4, 2, 8];
-
-console.log(bubbleSort(numbers)); // [1, 2, 4, 5, 8]
-console.log(numbers);             // [5, 1, 4, 2, 8]
-
-class Test {
-  constructor() {
-    this.name = "Test";
-  }
-
-  greet() {
-    console.log("Hello from Test class!");
-  }
-}
-
-`.trim();
+const sourceCode = data;
 
 const context: ParseContext = {
   id: "example-id",
@@ -76,7 +40,15 @@ const parser = new JsParser(context);
 
 async function runParser() {
   await parser.parse();
-  console.log("Parsed IR Nodes:", parser.irNodes);
+  // console.log(
+  //   "Parsed IR Nodes:",
+  //   parser.irNodes.map((node) => node.nodeKind),
+  // );
+  const f = parser.irNodes.map((node) => node.nodeKind);
+  fs.writeFileSync(
+    "./resources/parsed_ir_nodes.json",
+    JSON.stringify(f, null, 2),
+  );
 }
 
 runParser();

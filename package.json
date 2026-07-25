@@ -19,6 +19,7 @@
     "nodemon": "^3.1.14",
     "tree-sitter": "^0.25.0",
     "tree-sitter-javascript": "^0.25.0",
+    "tree-sitter-typescript": "^0.23.2",
     "tsc-watch": "^7.2.1",
     "typescript": "^7.0.2",
     "uuid": "^14.0.1"

@@ -17,9 +17,7 @@ interface ClassPropertyNode extends AbstractNode {
 interface ClassNode extends AbstractNode {
   name: string;
   qualifiedName: string;
-
-  startLine: number;
-  endLine: number;
+  nodeKind: "class";
 
   modifiers: string[];
 
@@ -32,8 +30,6 @@ interface ClassNode extends AbstractNode {
   constructors: FunctionNode[];
 
   parameters?: ParameterNode[];
-
-  parentNodeId?: string;
 
   sourceText: string;
 

@@ -6,6 +6,21 @@ import { ParseContext } from "../parse-context";
 import { ParameterNode } from "../ir/js/ts/parameter-node";
 import { AbstractNode } from "../ir/common/abstract-node";
 import { FileNode } from "../ir/js/ts/file-node";
+import { ImportNode, ImportSpecifierNode } from "../ir/js/ts/import-node";
+import { ExportNode, ExportSpecifierNode } from "../ir/js/ts/export-node";
+import {
+  VariableDeclarationKind,
+  VariableDeclarationNode,
+  VariableDeclaratorNode,
+} from "../ir/js/ts/variable-node";
+import { RequireNode } from "../ir/js/ts/require-node";
+import {
+  mapStatementType,
+  StatementNode,
+  statementTypes,
+  TreeSitterStatementType,
+} from "../ir/js/ts/statement-node";
+import { UnknownNode } from "../ir/js/ts/unknown-node";
 
 const treeSitterParser = new TreeSitterParser();
 treeSitterParser.setLanguage(
@@ -29,7 +44,7 @@ class Parser {
     const rootNode: TreeSitterParser.SyntaxNode = tree.rootNode;
 
     const fileNode: FileNode = {
-      filePath: this.parseContext.fileAbsolutePath,
+      filePath: this.parseContext.fileRelativePath,
       language: "javascript",
       nodeKind: "file",
       name: this.parseContext.fileName,
@@ -38,6 +53,8 @@ class Parser {
       // contentHash: "", // You can compute a hash of the content if needed
       nodeId: uuidv4(), // Generate a unique ID for the file node
       repoId: this.parseContext.repoId,
+      startLine: 0,
+      endLine: rootNode.endPosition.row,
     };
 
     this.irNodes.push(fileNode);
@@ -46,19 +63,207 @@ class Parser {
 
   async walkTree(node: TreeSitterParser.SyntaxNode, parentNode: AbstractNode) {
     for (const child of node.children) {
+      let nextParentNode = parentNode;
       if (child.type == "function_declaration") {
         const fnNode: FunctionNode = await this.parseFunction(
           child,
           parentNode,
         );
         this.irNodes.push(fnNode);
-      }
-      if (child.type == "class_declaration") {
+      } else if (child.type == "class_declaration") {
         const classNode: ClassNode = await this.parseClass(child, parentNode);
         this.irNodes.push(classNode);
+      } else if (child.type == "import_statement") {
+        const importNode = await this.parseImportStatement(child, parentNode);
+        this.irNodes.push(importNode);
+      } else if (child.type == "export_statement") {
+        const exportNode = await this.parseExportStatement(child, parentNode);
+        this.irNodes.push(exportNode);
+      } else if (
+        child.type == "lexical_declaration" ||
+        child.type == "variable_declaration" ||
+        child.type == "using_declaration"
+      ) {
+        const variableDeclarationNode = await this.parseVariableDeclaration(
+          child,
+          parentNode,
+        );
+        this.irNodes.push(variableDeclarationNode);
+      } else if (
+        statementTypes.includes(child.type as TreeSitterStatementType) &&
+        child.type !== "import_statement" &&
+        child.type !== "export_statement"
+      ) {
+        const stmtNode: StatementNode = await this.parseStatement(
+          child,
+          parentNode,
+        );
+        this.irNodes.push(stmtNode);
+        nextParentNode = stmtNode;
+      } else {
+        const { v4: uuidv4 } = await import("uuid");
+        // parse other stmt/expr/decl types beside defined on top
+        const unknownNode: UnknownNode = {
+          endLine: child.endPosition.row,
+          filePath: this.parseContext.fileRelativePath,
+          language: "javascript",
+          nodeId: uuidv4(),
+          treeSitterType: child.type,
+          sourceText: child.text,
+          nodeKind: "unknown",
+          repoId: this.parseContext.repoId,
+          startLine: child.startPosition.row,
+          parentNodeId: parentNode.nodeId,
+          parentTreeSitterType: node.type,
+        };
+        // this.irNodes.push(unknownNode);
+        // nextParentNode = unknownNode;
       }
-      await this.walkTree(child, parentNode);
+      await this.walkTree(child, nextParentNode);
     }
+  }
+
+  async parseImportStatement(
+    node: TreeSitterParser.SyntaxNode,
+    parentNode: AbstractNode,
+  ): Promise<ImportNode> {
+    const { v4: uuidv4 } = await import("uuid");
+    const sourceNode = node.childForFieldName("source");
+    const importClauseNode = node.children.find(
+      (child) => child.type === "import_clause",
+    );
+
+    const specifiers: ImportSpecifierNode[] = [];
+    let defaultImport: string | undefined;
+    let namespaceImport: string | undefined;
+
+    if (importClauseNode) {
+      for (const child of importClauseNode.children) {
+        if (child.type === "identifier") {
+          defaultImport = child.text;
+          continue;
+        }
+
+        if (child.type === "namespace_import") {
+          const namespaceIdentifier = child.children.find(
+            (grandChild) => grandChild.type === "identifier",
+          );
+          namespaceImport = namespaceIdentifier?.text;
+          continue;
+        }
+
+        if (child.type === "named_imports") {
+          for (const specifierNode of child.children) {
+            if (specifierNode.type !== "import_specifier") {
+              continue;
+            }
+
+            const importedNameNode = specifierNode.childForFieldName("name");
+            const localNameNode = specifierNode.childForFieldName("alias");
+
+            const importedName = importedNameNode?.text ?? specifierNode.text;
+            const localName = localNameNode?.text ?? importedName;
+
+            specifiers.push({
+              nodeId: uuidv4(),
+              repoId: this.parseContext.repoId,
+              filePath: this.parseContext.fileRelativePath,
+              language: "javascript",
+              nodeKind: "importSpecifier",
+              parentNodeId: parentNode.nodeId,
+              importedName,
+              localName,
+              startLine: specifierNode.startPosition.row,
+              endLine: specifierNode.endPosition.row,
+            });
+          }
+        }
+      }
+    }
+
+    return {
+      nodeId: uuidv4(),
+      repoId: this.parseContext.repoId,
+      filePath: this.parseContext.fileRelativePath,
+      language: "javascript",
+      nodeKind: "import",
+      parentNodeId: parentNode.nodeId,
+      source: this.stripQuotes(sourceNode?.text) || "",
+      startLine: node.startPosition.row,
+      endLine: node.endPosition.row,
+      defaultImport,
+      namespaceImport,
+      specifiers,
+      sourceText: node.text,
+    };
+  }
+
+  async parseExportStatement(
+    node: TreeSitterParser.SyntaxNode,
+    parentNode: AbstractNode,
+  ): Promise<ExportNode> {
+    const { v4: uuidv4 } = await import("uuid");
+    const sourceNode = node.childForFieldName("source");
+    const declarationNode = node.childForFieldName("declaration");
+    const valueNode = node.childForFieldName("value");
+    const exportClauseNode = node.children.find(
+      (child) => child.type === "export_clause",
+    );
+    const namespaceExportNode = node.children.find(
+      (child) => child.type === "namespace_export",
+    );
+
+    const specifiers: ExportSpecifierNode[] = [];
+    if (exportClauseNode) {
+      for (const child of exportClauseNode.children) {
+        if (child.type !== "export_specifier") {
+          continue;
+        }
+
+        const localNameNode = child.childForFieldName("name");
+        const exportedNameNode = child.childForFieldName("alias");
+        const localName = localNameNode?.text ?? child.text;
+        const exportedName = exportedNameNode?.text ?? localName;
+
+        specifiers.push({
+          nodeId: uuidv4(),
+          repoId: this.parseContext.repoId,
+          filePath: this.parseContext.fileRelativePath,
+          language: "javascript",
+          nodeKind: "exportSpecifier",
+          parentNodeId: parentNode.nodeId,
+          exportedName,
+          localName,
+          startLine: child.startPosition.row,
+          endLine: child.endPosition.row,
+        });
+      }
+    }
+
+    let exportKind: ExportNode["exportKind"] = "named";
+    if (namespaceExportNode) {
+      exportKind = "namespace";
+    } else if (declarationNode) {
+      exportKind = "declaration";
+    } else if (valueNode) {
+      exportKind = "default";
+    }
+
+    return {
+      nodeId: uuidv4(),
+      repoId: this.parseContext.repoId,
+      filePath: this.parseContext.fileRelativePath,
+      language: "javascript",
+      nodeKind: "export",
+      parentNodeId: parentNode.nodeId,
+      exportKind,
+      source: this.stripQuotes(sourceNode?.text),
+      declarationText: declarationNode?.text ?? valueNode?.text,
+      startLine: node.startPosition.row,
+      endLine: node.endPosition.row,
+      specifiers,
+      sourceText: node.text,
+    };
   }
 
   async parseClass(
@@ -123,6 +328,169 @@ class Parser {
     }
 
     return classNode;
+  }
+
+  async parseVariableDeclaration(
+    node: TreeSitterParser.SyntaxNode,
+    parentNode: AbstractNode,
+  ): Promise<VariableDeclarationNode> {
+    if (
+      node.type !== "lexical_declaration" &&
+      node.type !== "variable_declaration" &&
+      node.type !== "using_declaration"
+    ) {
+      throw new Error(
+        `Expected a variable declaration node, but got ${node.type}`,
+      );
+    }
+
+    const { v4: uuidv4 } = await import("uuid");
+    const kindNode = node.childForFieldName("kind");
+    const declarationKind = this.mapVariableDeclarationKind(
+      node.type,
+      kindNode?.text,
+    );
+
+    const variableDeclarationNode: VariableDeclarationNode = {
+      nodeId: uuidv4(),
+      repoId: this.parseContext.repoId,
+      filePath: this.parseContext.fileRelativePath,
+      language: "javascript",
+      nodeKind: "variableDeclaration",
+      parentNodeId: parentNode.nodeId,
+      declarationKind,
+      startLine: node.startPosition.row,
+      endLine: node.endPosition.row,
+      declarators: [],
+      sourceText: node.text,
+    };
+
+    for (const child of node.children) {
+      if (child.type === "variable_declarator") {
+        const parsedDeclarator = await this.parseVariableDeclarator(
+          child,
+          variableDeclarationNode,
+        );
+        variableDeclarationNode.declarators.push(parsedDeclarator.declarator);
+
+        if (parsedDeclarator.requireNode) {
+          this.irNodes.push(parsedDeclarator.requireNode);
+        }
+      }
+    }
+
+    return variableDeclarationNode;
+  }
+
+  async parseVariableDeclarator(
+    node: TreeSitterParser.SyntaxNode,
+    declarationNode: VariableDeclarationNode,
+  ): Promise<{
+    declarator: VariableDeclaratorNode;
+    requireNode?: RequireNode;
+  }> {
+    const { v4: uuidv4 } = await import("uuid");
+    const nameNode = node.childForFieldName("name");
+    const valueNode = node.childForFieldName("value");
+    const declaratorName = nameNode?.text ?? "unknown_variable";
+    const requireCall = valueNode
+      ? this.getRequireCallDetails(valueNode)
+      : undefined;
+
+    const declaratorNode: VariableDeclaratorNode = {
+      nodeId: uuidv4(),
+      repoId: this.parseContext.repoId,
+      filePath: this.parseContext.fileRelativePath,
+      language: "javascript",
+      nodeKind: "variableDeclarator",
+      parentNodeId: declarationNode.nodeId,
+      name: declaratorName,
+      qualifiedName: declaratorName,
+      startLine: node.startPosition.row,
+      endLine: node.endPosition.row,
+      type: "any",
+      value: valueNode?.text,
+      isDestructured:
+        nameNode?.type === "array_pattern" ||
+        nameNode?.type === "object_pattern",
+      defaultValue:
+        node.type === "variable_declarator" ? valueNode?.text : undefined,
+      initializerKind: requireCall ? "require" : "expression",
+      requiredModule: requireCall?.moduleName,
+    };
+
+    if (!requireCall) {
+      return { declarator: declaratorNode };
+    }
+
+    return {
+      declarator: declaratorNode,
+      requireNode: {
+        nodeId: uuidv4(),
+        repoId: this.parseContext.repoId,
+        filePath: this.parseContext.fileRelativePath,
+        language: "javascript",
+        nodeKind: "require",
+        parentNodeId: declaratorNode.nodeId,
+        moduleName: requireCall.moduleName,
+        assignedName: declaratorName,
+        startLine: valueNode?.startPosition.row ?? node.startPosition.row,
+        endLine: valueNode?.endPosition.row ?? node.endPosition.row,
+        sourceText: valueNode?.text ?? node.text,
+      },
+    };
+  }
+
+  getRequireCallDetails(
+    node?: TreeSitterParser.SyntaxNode,
+  ): { moduleName: string } | undefined {
+    if (!node || node.type !== "call_expression") {
+      return undefined;
+    }
+
+    const functionNode = node.childForFieldName("function");
+    if (!functionNode || functionNode.type !== "identifier") {
+      return undefined;
+    }
+
+    if (functionNode.text !== "require") {
+      return undefined;
+    }
+
+    const argumentsNode = node.childForFieldName("arguments");
+    const moduleArgument = argumentsNode?.children.find(
+      (child) => child.type === "string",
+    );
+    const moduleName = this.stripQuotes(moduleArgument?.text);
+
+    if (!moduleName) {
+      return undefined;
+    }
+
+    return { moduleName };
+  }
+
+  stripQuotes(value?: string): string | undefined {
+    if (!value) {
+      return undefined;
+    }
+
+    return value.replace(/^['"]|['"]$/g, "");
+  }
+
+  mapVariableDeclarationKind(
+    nodeType: TreeSitterParser.SyntaxNode["type"],
+    kindText?: string,
+  ): VariableDeclarationKind {
+    if (nodeType === "variable_declaration") {
+      return "var";
+    }
+
+    if (nodeType === "using_declaration") {
+      return kindText === "await using" ? "await using" : "using";
+    }
+
+    return kindText === "const" ? "const" : "let";
   }
 
   async parseFunction(
@@ -220,6 +588,8 @@ class Parser {
       nodeId: uuidv4(),
       repoId: this.parseContext.repoId,
       nodeKind: "property",
+      startLine: node.startPosition.row,
+      endLine: node.endPosition.row,
     };
   }
 
@@ -239,6 +609,8 @@ class Parser {
           nodeKind: "parameter",
           nodeId: uuidv4(),
           repoId: this.parseContext.repoId,
+          startLine: param.startPosition.row,
+          endLine: param.endPosition.row,
         });
         continue;
       }
@@ -257,6 +629,8 @@ class Parser {
             nodeId: uuidv4(),
             repoId: this.parseContext.repoId,
             nodeKind: "parameter",
+            startLine: param.startPosition.row,
+            endLine: param.endPosition.row,
           });
         }
         continue;
@@ -275,6 +649,8 @@ class Parser {
             nodeId: uuidv4(),
             repoId: this.parseContext.repoId,
             nodeKind: "parameter",
+            startLine: param.startPosition.row,
+            endLine: param.endPosition.row,
           });
         }
         continue;
@@ -289,11 +665,34 @@ class Parser {
           nodeId: uuidv4(),
           repoId: this.parseContext.repoId,
           nodeKind: "parameter",
+          startLine: param.startPosition.row,
+          endLine: param.endPosition.row,
         });
       }
     }
 
     return parameters;
+  }
+
+  async parseStatement(
+    node: TreeSitterParser.SyntaxNode,
+    parentNode: AbstractNode,
+  ): Promise<StatementNode> {
+    const { v4: uuidv4 } = await import("uuid");
+    const statementNode: StatementNode = {
+      nodeId: uuidv4(),
+      language: "javascript",
+      repoId: this.parseContext.repoId,
+      filePath: this.parseContext.fileRelativePath,
+      parentNodeId: parentNode.nodeId,
+      nodeKind: "statement",
+      stmtType: mapStatementType(node.type as TreeSitterStatementType),
+      text: node.text,
+      startLine: node.startPosition.row,
+      endLine: node.endPosition.row,
+    };
+
+    return statementNode;
   }
 }
 

@@ -13,9 +13,6 @@ interface FunctionNode extends AbstractNode {
   filePath: string;
   language: SupportedLanguage;
 
-  startLine: number;
-  endLine: number;
-
   parameters: ParameterNode[];
 
   sourceText: string;
@@ -23,8 +20,6 @@ interface FunctionNode extends AbstractNode {
   modifiers: string[];
 
   returnType?: TypeReference;
-
-  parentNodeId?: string;
 
   languageSpecific?: LanguageSpecificFunctionData;
 }
