@@ -1,7 +1,11 @@
 interface ParseContext {
   id: string;
-  repoId: string;
-  filePath: string;
+  fileAbsolutePath: string;
+  fileRelativePath: string;
+  fileName: string;
+  lineCount: number;
+  sizeInBytes: number;
+  fileContent: string;
 }
 
 export type { ParseContext };

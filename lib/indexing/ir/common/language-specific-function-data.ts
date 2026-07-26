@@ -1,3 +1,3 @@
-type LanguageSpecificFunctionData = {};
+interface LanguageSpecificFunctionData {}
 
 export type { LanguageSpecificFunctionData };
