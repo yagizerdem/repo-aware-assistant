@@ -1,5 +1,5 @@
 import TreeSitterParser from "tree-sitter";
-import JavaScript from "tree-sitter-javascript";
+import TypeScriptPackage from "tree-sitter-typescript";
 import type { FunctionNode } from "@lib/indexing/ir/js/function-node";
 import type {
   ClassNode,
@@ -30,11 +30,19 @@ import {
   type TreeSitterStatementType,
 } from "../ir/js/statement-node";
 import type { UnknownNode } from "@lib/indexing/ir/js/unknown-node";
+import type {
+  EnumMemberNode,
+  EnumNode,
+  InterfaceMemberNode,
+  InterfaceNode,
+  TypeAliasNode,
+} from "@lib/indexing/ir/ts/type-declaration-node";
 
 const treeSitterParser = new TreeSitterParser();
-treeSitterParser.setLanguage(
-  JavaScript as unknown as TreeSitterParser.Language,
-);
+const tsLanguage = (
+  TypeScriptPackage as unknown as { typescript: TreeSitterParser.Language }
+).typescript;
+treeSitterParser.setLanguage(tsLanguage);
 
 class Parser {
   private parseContext: ParseContext;
@@ -48,19 +56,17 @@ class Parser {
   async parse() {
     const { v4: uuidv4 } = await import("uuid");
     const sourceCode = this.parseContext.fileContent;
-    this.parseContext = this.parseContext;
     const tree = treeSitterParser.parse(sourceCode);
     const rootNode: TreeSitterParser.SyntaxNode = tree.rootNode;
 
     const fileNode: FileNode = {
       filePath: this.parseContext.fileRelativePath,
-      language: "javascript",
+      language: "typescript",
       nodeKind: "file",
       name: this.parseContext.fileName,
       lineCount: sourceCode.split("\n").length,
       sizeInBytes: Buffer.byteLength(sourceCode, "utf-8"),
-      // contentHash: "", // You can compute a hash of the content if needed
-      nodeId: uuidv4(), // Generate a unique ID for the file node
+      nodeId: uuidv4(),
       startLine: 0,
       endLine: rootNode.endPosition.row,
     };
@@ -72,6 +78,7 @@ class Parser {
   async walkTree(node: TreeSitterParser.SyntaxNode, parentNode: AbstractNode) {
     for (const child of node.children) {
       let nextParentNode = parentNode;
+
       if (child.type == "function_declaration") {
         const fnNode: FunctionNode = await this.parseFunction(
           child,
@@ -79,9 +86,24 @@ class Parser {
         );
         this.irNodes.push(fnNode);
         nextParentNode = fnNode;
-      } else if (child.type == "class_declaration") {
+      } else if (
+        child.type == "class_declaration" ||
+        child.type == "abstract_class_declaration" ||
+        child.type == "class"
+      ) {
         const classNode: ClassNode = await this.parseClass(child, parentNode);
         this.irNodes.push(classNode);
+        // parseClass already traverses method/property bodies with correct parents.
+        continue;
+      } else if (child.type == "interface_declaration") {
+        const interfaceNode = await this.parseInterface(child, parentNode);
+        this.irNodes.push(interfaceNode);
+      } else if (child.type == "type_alias_declaration") {
+        const typeAliasNode = await this.parseTypeAlias(child, parentNode);
+        this.irNodes.push(typeAliasNode);
+      } else if (child.type == "enum_declaration") {
+        const enumNode = await this.parseEnum(child, parentNode);
+        this.irNodes.push(enumNode);
       } else if (child.type == "import_statement") {
         const importNode = await this.parseImportStatement(child, parentNode);
         this.irNodes.push(importNode);
@@ -90,8 +112,7 @@ class Parser {
         this.irNodes.push(exportNode);
       } else if (
         child.type == "lexical_declaration" ||
-        child.type == "variable_declaration" ||
-        child.type == "using_declaration"
+        child.type == "variable_declaration"
       ) {
         const variableDeclarationNode = await this.parseVariableDeclaration(
           child,
@@ -111,11 +132,10 @@ class Parser {
         nextParentNode = stmtNode;
       } else {
         const { v4: uuidv4 } = await import("uuid");
-        // parse other stmt/expr/decl types beside defined on top
         const unknownNode: UnknownNode = {
           endLine: child.endPosition.row,
           filePath: this.parseContext.fileRelativePath,
-          language: "javascript",
+          language: "typescript",
           nodeId: uuidv4(),
           treeSitterType: child.type,
           sourceText: child.text,
@@ -124,11 +144,181 @@ class Parser {
           parentNodeId: parentNode.nodeId,
           parentTreeSitterType: node.type,
         };
-        // this.irNodes.push(unknownNode);
-        // nextParentNode = unknownNode;
+        void unknownNode;
       }
+
       await this.walkTree(child, nextParentNode);
     }
+  }
+
+  async parseInterface(
+    node: TreeSitterParser.SyntaxNode,
+    parentNode: AbstractNode,
+  ): Promise<InterfaceNode> {
+    const { v4: uuidv4 } = await import("uuid");
+    const nameNode = node.childForFieldName("name");
+    const bodyNode = node.childForFieldName("body");
+    const typeParametersNode = node.childForFieldName("type_parameters");
+
+    const interfaceNode: InterfaceNode = {
+      nodeId: uuidv4(),
+      filePath: this.parseContext.fileRelativePath,
+      language: "typescript",
+      nodeKind: "interface",
+      parentNodeId: parentNode.nodeId,
+      name: nameNode?.text ?? "anonymous_interface",
+      qualifiedName: nameNode?.text ?? "anonymous_interface",
+      typeParameters: this.extractTypeParameters(typeParametersNode?.text),
+      extendsTypes: this.extractExtendsTypes(node),
+      members: [],
+      sourceText: node.text,
+      startLine: node.startPosition.row,
+      endLine: node.endPosition.row,
+    };
+
+    if (bodyNode) {
+      for (const member of bodyNode.children) {
+        if (!member.isNamed) {
+          continue;
+        }
+
+        interfaceNode.members.push(
+          await this.parseInterfaceMember(member, interfaceNode),
+        );
+      }
+    }
+
+    return interfaceNode;
+  }
+
+  async parseInterfaceMember(
+    node: TreeSitterParser.SyntaxNode,
+    parentNode: InterfaceNode,
+  ): Promise<InterfaceMemberNode> {
+    const { v4: uuidv4 } = await import("uuid");
+    const nameNode = node.childForFieldName("name");
+    const typeNode = node.childForFieldName("type");
+
+    let memberKind: InterfaceMemberNode["memberKind"] = "property";
+    if (node.type === "method_signature") {
+      memberKind = "method";
+    } else if (node.type === "index_signature") {
+      memberKind = "index";
+    } else if (node.type === "call_signature") {
+      memberKind = "call";
+    } else if (node.type === "construct_signature") {
+      memberKind = "construct";
+    }
+
+    return {
+      nodeId: uuidv4(),
+      filePath: this.parseContext.fileRelativePath,
+      language: "typescript",
+      nodeKind: "interfaceMember",
+      parentNodeId: parentNode.nodeId,
+      name: nameNode?.text ?? node.type,
+      memberKind,
+      typeText: typeNode?.text,
+      optional: node.type === "property_signature" && node.text.includes("?:"),
+      startLine: node.startPosition.row,
+      endLine: node.endPosition.row,
+    };
+  }
+
+  async parseTypeAlias(
+    node: TreeSitterParser.SyntaxNode,
+    parentNode: AbstractNode,
+  ): Promise<TypeAliasNode> {
+    const { v4: uuidv4 } = await import("uuid");
+    const nameNode = node.childForFieldName("name");
+    const valueNode = node.childForFieldName("value");
+    const typeParametersNode = node.childForFieldName("type_parameters");
+
+    return {
+      nodeId: uuidv4(),
+      filePath: this.parseContext.fileRelativePath,
+      language: "typescript",
+      nodeKind: "typeAlias",
+      parentNodeId: parentNode.nodeId,
+      name: nameNode?.text ?? "anonymous_type_alias",
+      qualifiedName: nameNode?.text ?? "anonymous_type_alias",
+      typeParameters: this.extractTypeParameters(typeParametersNode?.text),
+      value: valueNode?.text ?? "unknown",
+      sourceText: node.text,
+      startLine: node.startPosition.row,
+      endLine: node.endPosition.row,
+    };
+  }
+
+  async parseEnum(
+    node: TreeSitterParser.SyntaxNode,
+    parentNode: AbstractNode,
+  ): Promise<EnumNode> {
+    const { v4: uuidv4 } = await import("uuid");
+    const nameNode = node.childForFieldName("name");
+    const bodyNode = node.childForFieldName("body");
+
+    const enumNode: EnumNode = {
+      nodeId: uuidv4(),
+      filePath: this.parseContext.fileRelativePath,
+      language: "typescript",
+      nodeKind: "enum",
+      parentNodeId: parentNode.nodeId,
+      name: nameNode?.text ?? "anonymous_enum",
+      qualifiedName: nameNode?.text ?? "anonymous_enum",
+      isConst: node.text.startsWith("const enum"),
+      members: [],
+      sourceText: node.text,
+      startLine: node.startPosition.row,
+      endLine: node.endPosition.row,
+    };
+
+    if (bodyNode) {
+      for (const child of bodyNode.children) {
+        if (!child.isNamed) {
+          continue;
+        }
+
+        const member = await this.parseEnumMember(child, enumNode);
+        enumNode.members.push(member);
+      }
+    }
+
+    return enumNode;
+  }
+
+  async parseEnumMember(
+    node: TreeSitterParser.SyntaxNode,
+    parentNode: EnumNode,
+  ): Promise<EnumMemberNode> {
+    const { v4: uuidv4 } = await import("uuid");
+
+    if (node.type === "enum_assignment") {
+      const nameNode = node.childForFieldName("name");
+      const valueNode = node.childForFieldName("value");
+      return {
+        nodeId: uuidv4(),
+        filePath: this.parseContext.fileRelativePath,
+        language: "typescript",
+        nodeKind: "enumMember",
+        parentNodeId: parentNode.nodeId,
+        name: nameNode?.text ?? "unknown_enum_member",
+        value: valueNode?.text,
+        startLine: node.startPosition.row,
+        endLine: node.endPosition.row,
+      };
+    }
+
+    return {
+      nodeId: uuidv4(),
+      filePath: this.parseContext.fileRelativePath,
+      language: "typescript",
+      nodeKind: "enumMember",
+      parentNodeId: parentNode.nodeId,
+      name: node.text,
+      startLine: node.startPosition.row,
+      endLine: node.endPosition.row,
+    };
   }
 
   async parseImportStatement(
@@ -175,7 +365,7 @@ class Parser {
             specifiers.push({
               nodeId: uuidv4(),
               filePath: this.parseContext.fileRelativePath,
-              language: "javascript",
+              language: "typescript",
               nodeKind: "importSpecifier",
               parentNodeId: parentNode.nodeId,
               importedName,
@@ -191,7 +381,7 @@ class Parser {
     return {
       nodeId: uuidv4(),
       filePath: this.parseContext.fileRelativePath,
-      language: "javascript",
+      language: "typescript",
       nodeKind: "import",
       parentNodeId: parentNode.nodeId,
       source: this.stripQuotes(sourceNode?.text) || "",
@@ -234,7 +424,7 @@ class Parser {
         specifiers.push({
           nodeId: uuidv4(),
           filePath: this.parseContext.fileRelativePath,
-          language: "javascript",
+          language: "typescript",
           nodeKind: "exportSpecifier",
           parentNodeId: parentNode.nodeId,
           exportedName,
@@ -257,7 +447,7 @@ class Parser {
     return {
       nodeId: uuidv4(),
       filePath: this.parseContext.fileRelativePath,
-      language: "javascript",
+      language: "typescript",
       nodeKind: "export",
       parentNodeId: parentNode.nodeId,
       exportKind,
@@ -274,10 +464,12 @@ class Parser {
     node: TreeSitterParser.SyntaxNode,
     parentNode: AbstractNode,
   ): Promise<ClassNode> {
-    if (node.type !== "class_declaration") {
-      throw new Error(
-        `Expected a class_declaration node, but got ${node.type}`,
-      );
+    if (
+      node.type !== "class_declaration" &&
+      node.type !== "abstract_class_declaration" &&
+      node.type !== "class"
+    ) {
+      throw new Error(`Expected a class node, but got ${node.type}`);
     }
 
     const { v4: uuidv4 } = await import("uuid");
@@ -288,23 +480,21 @@ class Parser {
       nodeId: uuidv4(),
       nodeKind: "class",
       filePath: this.parseContext.fileRelativePath,
-      language: "javascript",
+      language: "typescript",
       parentNodeId: parentNode.nodeId,
       name: className,
       qualifiedName: className,
       startLine: node.startPosition.row,
       endLine: node.endPosition.row,
-      modifiers: [],
+      modifiers: node.type === "abstract_class_declaration" ? ["abstract"] : [],
       properties: [],
       methods: [],
       constructors: [],
       sourceText: node.text,
+      typeParameters: this.extractTypeParameters(
+        node.childForFieldName("type_parameters")?.text,
+      ),
     };
-
-    const heritageNode = node.childForFieldName("heritage");
-    if (heritageNode && heritageNode.text.startsWith("extends ")) {
-      classNode.extends = ["class"];
-    }
 
     const classBodyNode = node.childForFieldName("body");
     if (!classBodyNode) {
@@ -314,6 +504,12 @@ class Parser {
     for (const member of classBodyNode.children) {
       if (member.type === "method_definition") {
         const methodNode = await this.parseMethodDefinition(member, classNode);
+        this.irNodes.push(methodNode);
+
+        const methodBodyNode = member.childForFieldName("body");
+        if (methodBodyNode) {
+          await this.walkTree(methodBodyNode, methodNode);
+        }
 
         if (methodNode.nodeKind === "constructor") {
           classNode.constructors.push(methodNode);
@@ -326,7 +522,18 @@ class Parser {
         member.type === "field_definition" ||
         member.type === "public_field_definition"
       ) {
-        classNode.properties.push(await this.parseClassProperty(member));
+        const propertyNode = await this.parseClassProperty(member);
+        classNode.properties.push(propertyNode);
+        this.irNodes.push(propertyNode);
+
+        const initializerNode = member.childForFieldName("value");
+        if (initializerNode) {
+          await this.walkTree(initializerNode, propertyNode);
+        }
+      }
+
+      if (member.type === "class_static_block") {
+        await this.walkTree(member, classNode);
       }
     }
 
@@ -339,8 +546,7 @@ class Parser {
   ): Promise<VariableDeclarationNode> {
     if (
       node.type !== "lexical_declaration" &&
-      node.type !== "variable_declaration" &&
-      node.type !== "using_declaration"
+      node.type !== "variable_declaration"
     ) {
       throw new Error(
         `Expected a variable declaration node, but got ${node.type}`,
@@ -357,7 +563,7 @@ class Parser {
     const variableDeclarationNode: VariableDeclarationNode = {
       nodeId: uuidv4(),
       filePath: this.parseContext.fileRelativePath,
-      language: "javascript",
+      language: "typescript",
       nodeKind: "variableDeclaration",
       parentNodeId: parentNode.nodeId,
       declarationKind,
@@ -402,7 +608,7 @@ class Parser {
     const declaratorNode: VariableDeclaratorNode = {
       nodeId: uuidv4(),
       filePath: this.parseContext.fileRelativePath,
-      language: "javascript",
+      language: "typescript",
       nodeKind: "variableDeclarator",
       parentNodeId: declarationNode.nodeId,
       name: declaratorName,
@@ -429,7 +635,7 @@ class Parser {
       requireNode: {
         nodeId: uuidv4(),
         filePath: this.parseContext.fileRelativePath,
-        language: "javascript",
+        language: "typescript",
         nodeKind: "require",
         parentNodeId: declaratorNode.nodeId,
         moduleName: requireCall.moduleName,
@@ -439,58 +645,6 @@ class Parser {
         sourceText: valueNode?.text ?? node.text,
       },
     };
-  }
-
-  getRequireCallDetails(
-    node?: TreeSitterParser.SyntaxNode,
-  ): { moduleName: string } | undefined {
-    if (!node || node.type !== "call_expression") {
-      return undefined;
-    }
-
-    const functionNode = node.childForFieldName("function");
-    if (!functionNode || functionNode.type !== "identifier") {
-      return undefined;
-    }
-
-    if (functionNode.text !== "require") {
-      return undefined;
-    }
-
-    const argumentsNode = node.childForFieldName("arguments");
-    const moduleArgument = argumentsNode?.children.find(
-      (child) => child.type === "string",
-    );
-    const moduleName = this.stripQuotes(moduleArgument?.text);
-
-    if (!moduleName) {
-      return undefined;
-    }
-
-    return { moduleName };
-  }
-
-  stripQuotes(value?: string): string | undefined {
-    if (!value) {
-      return undefined;
-    }
-
-    return value.replace(/^['"]|['"]$/g, "");
-  }
-
-  mapVariableDeclarationKind(
-    nodeType: TreeSitterParser.SyntaxNode["type"],
-    kindText?: string,
-  ): VariableDeclarationKind {
-    if (nodeType === "variable_declaration") {
-      return "var";
-    }
-
-    if (nodeType === "using_declaration") {
-      return kindText === "await using" ? "await using" : "using";
-    }
-
-    return kindText === "const" ? "const" : "let";
   }
 
   async parseFunction(
@@ -510,10 +664,10 @@ class Parser {
       endLine: node.endPosition.row,
       startLine: node.startPosition.row,
       filePath: this.parseContext.fileRelativePath,
-      returnType: "any", // JavaScript functions can return any type, so we can set this to "any" for now.
-      modifiers: [], // JavaScript doesn't have explicit modifiers like public/private, so we can leave this empty for now.
+      returnType: "any",
+      modifiers: [],
       nodeKind: "function",
-      language: "javascript",
+      language: "typescript",
       sourceText: node.text,
       parameters: [],
     };
@@ -545,7 +699,7 @@ class Parser {
     return {
       nodeId: uuidv4(),
       filePath: this.parseContext.fileRelativePath,
-      language: "javascript",
+      language: "typescript",
       parentNodeId: classNode.nodeId,
       nodeKind: isConstructor ? "constructor" : "method",
       name: methodName,
@@ -565,7 +719,8 @@ class Parser {
     node: TreeSitterParser.SyntaxNode,
   ): Promise<ClassPropertyNode> {
     const { v4: uuidv4 } = await import("uuid");
-    const nameNode = node.childForFieldName("name");
+    const nameNode =
+      node.childForFieldName("name") || node.childForFieldName("property");
     const valueNode = node.childForFieldName("value");
 
     const propertyName = nameNode?.text ?? "unknown_property";
@@ -575,14 +730,19 @@ class Parser {
       modifiers.push("static");
     }
 
+    if (node.text.startsWith("readonly ")) {
+      modifiers.push("readonly");
+    }
+
     return {
       name: propertyName,
       type: "any",
       modifiers,
       static: modifiers.includes("static"),
+      readonly: modifiers.includes("readonly"),
       defaultValue: valueNode?.text,
       filePath: this.parseContext.fileRelativePath,
-      language: "javascript",
+      language: "typescript",
       nodeId: uuidv4(),
       nodeKind: "property",
       startLine: node.startPosition.row,
@@ -597,12 +757,44 @@ class Parser {
     const { v4: uuidv4 } = await import("uuid");
 
     for (const param of node.children) {
+      if (!param.isNamed) {
+        continue;
+      }
+
+      if (
+        param.type === "required_parameter" ||
+        param.type === "optional_parameter"
+      ) {
+        const nameNode =
+          param.childForFieldName("name") || param.childForFieldName("pattern");
+        const valueNode = param.childForFieldName("value");
+
+        const nameText = nameNode?.text ?? "unknown_parameter";
+        const isVariadic =
+          nameNode?.type === "rest_pattern" || nameText.startsWith("...");
+
+        parameters.push({
+          name: nameText.replace(/^\.\.\./, ""),
+          type: "any",
+          optional: param.type === "optional_parameter",
+          defaultValue: valueNode?.text,
+          variadic: isVariadic,
+          filePath: this.parseContext.fileRelativePath,
+          language: "typescript",
+          nodeKind: "parameter",
+          nodeId: uuidv4(),
+          startLine: param.startPosition.row,
+          endLine: param.endPosition.row,
+        });
+        continue;
+      }
+
       if (param.type == "identifier") {
         parameters.push({
           name: param.text,
           type: "any",
           filePath: this.parseContext.fileRelativePath,
-          language: "javascript",
+          language: "typescript",
           nodeKind: "parameter",
           nodeId: uuidv4(),
           startLine: param.startPosition.row,
@@ -621,7 +813,7 @@ class Parser {
             type: "any",
             defaultValue: defaultValueNode?.text,
             filePath: this.parseContext.fileRelativePath,
-            language: "javascript",
+            language: "typescript",
             nodeId: uuidv4(),
             nodeKind: "parameter",
             startLine: param.startPosition.row,
@@ -640,7 +832,7 @@ class Parser {
             type: "any",
             variadic: true,
             filePath: this.parseContext.fileRelativePath,
-            language: "javascript",
+            language: "typescript",
             nodeId: uuidv4(),
             nodeKind: "parameter",
             startLine: param.startPosition.row,
@@ -650,18 +842,16 @@ class Parser {
         continue;
       }
 
-      if (param.type !== "," && param.type !== "(" && param.type !== ")") {
-        parameters.push({
-          name: param.text,
-          type: "any",
-          filePath: this.parseContext.fileRelativePath,
-          language: "javascript",
-          nodeId: uuidv4(),
-          nodeKind: "parameter",
-          startLine: param.startPosition.row,
-          endLine: param.endPosition.row,
-        });
-      }
+      parameters.push({
+        name: param.text,
+        type: "any",
+        filePath: this.parseContext.fileRelativePath,
+        language: "typescript",
+        nodeId: uuidv4(),
+        nodeKind: "parameter",
+        startLine: param.startPosition.row,
+        endLine: param.endPosition.row,
+      });
     }
 
     return parameters;
@@ -674,7 +864,7 @@ class Parser {
     const { v4: uuidv4 } = await import("uuid");
     const statementNode: StatementNode = {
       nodeId: uuidv4(),
-      language: "javascript",
+      language: "typescript",
       filePath: this.parseContext.fileRelativePath,
       parentNodeId: parentNode.nodeId,
       nodeKind: "statement",
@@ -685,6 +875,86 @@ class Parser {
     };
 
     return statementNode;
+  }
+
+  getRequireCallDetails(
+    node?: TreeSitterParser.SyntaxNode,
+  ): { moduleName: string } | undefined {
+    if (!node || node.type !== "call_expression") {
+      return undefined;
+    }
+
+    const functionNode = node.childForFieldName("function");
+    if (!functionNode || functionNode.type !== "identifier") {
+      return undefined;
+    }
+
+    if (functionNode.text !== "require") {
+      return undefined;
+    }
+
+    const argumentsNode = node.childForFieldName("arguments");
+    const moduleArgument = argumentsNode?.children.find(
+      (child) => child.type === "string",
+    );
+    const moduleName = this.stripQuotes(moduleArgument?.text);
+
+    if (!moduleName) {
+      return undefined;
+    }
+
+    return { moduleName };
+  }
+
+  mapVariableDeclarationKind(
+    nodeType: TreeSitterParser.SyntaxNode["type"],
+    kindText?: string,
+  ): VariableDeclarationKind {
+    if (nodeType === "variable_declaration") {
+      return "var";
+    }
+
+    return kindText === "const" ? "const" : "let";
+  }
+
+  extractTypeParameters(typeParametersText?: string): string[] | undefined {
+    if (!typeParametersText) {
+      return undefined;
+    }
+
+    const text = typeParametersText.trim();
+    if (!text.startsWith("<") || !text.endsWith(">")) {
+      return [text];
+    }
+
+    const raw = text.slice(1, -1).trim();
+    if (!raw) {
+      return [];
+    }
+
+    return raw.split(",").map((part) => part.trim());
+  }
+
+  extractExtendsTypes(node: TreeSitterParser.SyntaxNode): string[] {
+    const extendsClause = node.children.find(
+      (child) => child.type === "extends_type_clause",
+    );
+
+    if (!extendsClause) {
+      return [];
+    }
+
+    return extendsClause.children
+      .filter((child) => child.isNamed)
+      .map((child) => child.text);
+  }
+
+  stripQuotes(value?: string): string | undefined {
+    if (!value) {
+      return undefined;
+    }
+
+    return value.replace(/^['\"]|['\"]$/g, "");
   }
 }
 

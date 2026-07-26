@@ -6,26 +6,26 @@
     "name": "example-file-name",
     "lineCount": 62,
     "sizeInBytes": 1736,
-    "nodeId": "caf53510-d727-44b4-b2ca-2f00b37df8d8",
+    "nodeId": "b6cf305b-3bfb-44a9-8288-98db2acd8ae4",
     "startLine": 0,
     "endLine": 61
   },
   {
-    "nodeId": "e17616c7-3b23-4b59-bb85-5ad32af29227",
+    "nodeId": "b488697f-4fb3-4cde-84ca-afa0c635c734",
     "filePath": "example-file-relative-path",
     "language": "typescript",
     "nodeKind": "interface",
-    "parentNodeId": "caf53510-d727-44b4-b2ca-2f00b37df8d8",
+    "parentNodeId": "b6cf305b-3bfb-44a9-8288-98db2acd8ae4",
     "name": "User",
     "qualifiedName": "User",
     "extendsTypes": [],
     "members": [
       {
-        "nodeId": "c2743fa9-15fa-49b3-bf1f-b6c557652884",
+        "nodeId": "118efcee-ef6d-42ef-8715-c41d5dab04e6",
         "filePath": "example-file-relative-path",
         "language": "typescript",
         "nodeKind": "interfaceMember",
-        "parentNodeId": "e17616c7-3b23-4b59-bb85-5ad32af29227",
+        "parentNodeId": "b488697f-4fb3-4cde-84ca-afa0c635c734",
         "name": "id",
         "memberKind": "property",
         "typeText": ": number",
@@ -34,11 +34,11 @@
         "endLine": 2
       },
       {
-        "nodeId": "c853f30b-1dc0-454c-b96e-990b88c0296e",
+        "nodeId": "ad3d1dcf-0b43-49ca-a359-2e08ac269740",
         "filePath": "example-file-relative-path",
         "language": "typescript",
         "nodeKind": "interfaceMember",
-        "parentNodeId": "e17616c7-3b23-4b59-bb85-5ad32af29227",
+        "parentNodeId": "b488697f-4fb3-4cde-84ca-afa0c635c734",
         "name": "name",
         "memberKind": "property",
         "typeText": ": string",
@@ -47,11 +47,11 @@
         "endLine": 3
       },
       {
-        "nodeId": "d4ae4d26-b125-451c-b783-58ab13ff83d3",
+        "nodeId": "edfb07f1-149f-45ed-829f-04e30b6f47a2",
         "filePath": "example-file-relative-path",
         "language": "typescript",
         "nodeKind": "interfaceMember",
-        "parentNodeId": "e17616c7-3b23-4b59-bb85-5ad32af29227",
+        "parentNodeId": "b488697f-4fb3-4cde-84ca-afa0c635c734",
         "name": "email",
         "memberKind": "property",
         "typeText": ": string",
@@ -60,11 +60,11 @@
         "endLine": 4
       },
       {
-        "nodeId": "b21b6c14-07ff-48d1-911a-aab8b40718dc",
+        "nodeId": "d32f90d2-dafe-41cd-9d1b-00f1f4f4be23",
         "filePath": "example-file-relative-path",
         "language": "typescript",
         "nodeKind": "interfaceMember",
-        "parentNodeId": "e17616c7-3b23-4b59-bb85-5ad32af29227",
+        "parentNodeId": "b488697f-4fb3-4cde-84ca-afa0c635c734",
         "name": "role",
         "memberKind": "property",
         "typeText": ": \"admin\" | \"user\" | \"guest\"",
@@ -73,11 +73,11 @@
         "endLine": 5
       },
       {
-        "nodeId": "a41a1653-13e9-4c1a-a43d-c833856b6d0f",
+        "nodeId": "166422d6-e249-40af-9663-acf4a6dae21e",
         "filePath": "example-file-relative-path",
         "language": "typescript",
         "nodeKind": "interfaceMember",
-        "parentNodeId": "e17616c7-3b23-4b59-bb85-5ad32af29227",
+        "parentNodeId": "b488697f-4fb3-4cde-84ca-afa0c635c734",
         "name": "comment",
         "memberKind": "property",
         "optional": false,
@@ -85,11 +85,11 @@
         "endLine": 5
       },
       {
-        "nodeId": "4bfa7c03-846f-4022-b652-df7ecb428c8d",
+        "nodeId": "4a85355e-cccf-4c9d-bb0e-96147eb6b857",
         "filePath": "example-file-relative-path",
         "language": "typescript",
         "nodeKind": "interfaceMember",
-        "parentNodeId": "e17616c7-3b23-4b59-bb85-5ad32af29227",
+        "parentNodeId": "b488697f-4fb3-4cde-84ca-afa0c635c734",
         "name": "isActive",
         "memberKind": "property",
         "typeText": ": boolean",
@@ -103,11 +103,11 @@
     "endLine": 7
   },
   {
-    "nodeId": "16eca59f-d6b6-4bcd-9925-595d87e928a4",
+    "nodeId": "9392894e-3250-4d21-b072-f1ce3a54c623",
     "filePath": "example-file-relative-path",
     "language": "typescript",
     "nodeKind": "typeAlias",
-    "parentNodeId": "caf53510-d727-44b4-b2ca-2f00b37df8d8",
+    "parentNodeId": "b6cf305b-3bfb-44a9-8288-98db2acd8ae4",
     "name": "ServerResponse",
     "qualifiedName": "ServerResponse",
     "typeParameters": [
@@ -127,16 +127,16 @@
     "defaultValue": "[]",
     "filePath": "example-file-relative-path",
     "language": "typescript",
-    "nodeId": "150f1262-3e74-4f5b-a838-8edac9922d56",
+    "nodeId": "969f1099-46b3-4f3d-9d79-a77a1bd37863",
     "nodeKind": "property",
     "startLine": 19,
     "endLine": 19
   },
   {
-    "nodeId": "96208525-053a-4f51-bdcf-3a998239e348",
+    "nodeId": "3de290cb-8533-466b-8391-3ae48137e040",
     "filePath": "example-file-relative-path",
     "language": "typescript",
-    "parentNodeId": "ca004357-2099-43c1-bc23-f76bb8e2e922",
+    "parentNodeId": "41ab517f-5178-4a87-82ee-61f45e844d91",
     "nodeKind": "method",
     "name": "addUser",
     "qualifiedName": "UserRegistry.addUser",
@@ -154,17 +154,17 @@
         "filePath": "example-file-relative-path",
         "language": "typescript",
         "nodeKind": "parameter",
-        "nodeId": "589636f8-5095-4480-86d5-faeb5124e204",
+        "nodeId": "8c53bed5-abd6-4a26-90b6-f26b221b845a",
         "startLine": 22,
         "endLine": 22
       }
     ]
   },
   {
-    "nodeId": "e89d264d-7bc2-476f-b772-9ef28b25c16b",
+    "nodeId": "162ad425-43fa-484a-ad1c-f62eb3ba9b20",
     "language": "typescript",
     "filePath": "example-file-relative-path",
-    "parentNodeId": "96208525-053a-4f51-bdcf-3a998239e348",
+    "parentNodeId": "3de290cb-8533-466b-8391-3ae48137e040",
     "nodeKind": "statement",
     "stmtType": "expression",
     "text": "this.users.push(newUser);",
@@ -172,10 +172,10 @@
     "endLine": 23
   },
   {
-    "nodeId": "7eadc02a-0119-459d-a2e4-3bb51eb87b56",
+    "nodeId": "6da08b57-8675-4856-9df1-4bfa20afc7a8",
     "language": "typescript",
     "filePath": "example-file-relative-path",
-    "parentNodeId": "96208525-053a-4f51-bdcf-3a998239e348",
+    "parentNodeId": "3de290cb-8533-466b-8391-3ae48137e040",
     "nodeKind": "statement",
     "stmtType": "expression",
     "text": "console.log(`User ${newUser.name} added successfully.`);",
@@ -183,10 +183,10 @@
     "endLine": 24
   },
   {
-    "nodeId": "a064a604-9000-4505-8d49-3bc303adc89f",
+    "nodeId": "349c3dab-1b43-412c-bdeb-721123e1cb44",
     "filePath": "example-file-relative-path",
     "language": "typescript",
-    "parentNodeId": "ca004357-2099-43c1-bc23-f76bb8e2e922",
+    "parentNodeId": "41ab517f-5178-4a87-82ee-61f45e844d91",
     "nodeKind": "method",
     "name": "findUserById",
     "qualifiedName": "UserRegistry.findUserById",
@@ -204,17 +204,17 @@
         "filePath": "example-file-relative-path",
         "language": "typescript",
         "nodeKind": "parameter",
-        "nodeId": "8510067c-fb8d-46f1-a4e4-f1301643070f",
+        "nodeId": "7f00e70e-2db9-445f-bbd6-3dcb32dd43f7",
         "startLine": 28,
         "endLine": 28
       }
     ]
   },
   {
-    "nodeId": "7becede3-0368-403f-bedf-0fbe77c58864",
+    "nodeId": "81c567ea-0409-4d5f-9a32-4a09ae1433f2",
     "language": "typescript",
     "filePath": "example-file-relative-path",
-    "parentNodeId": "a064a604-9000-4505-8d49-3bc303adc89f",
+    "parentNodeId": "349c3dab-1b43-412c-bdeb-721123e1cb44",
     "nodeKind": "statement",
     "stmtType": "return",
     "text": "return this.users.find(user => user.id === id);",
@@ -222,11 +222,11 @@
     "endLine": 29
   },
   {
-    "nodeId": "ca004357-2099-43c1-bc23-f76bb8e2e922",
+    "nodeId": "41ab517f-5178-4a87-82ee-61f45e844d91",
     "nodeKind": "class",
     "filePath": "example-file-relative-path",
     "language": "typescript",
-    "parentNodeId": "caf53510-d727-44b4-b2ca-2f00b37df8d8",
+    "parentNodeId": "b6cf305b-3bfb-44a9-8288-98db2acd8ae4",
     "name": "UserRegistry",
     "qualifiedName": "UserRegistry",
     "startLine": 17,
@@ -242,7 +242,7 @@
         "defaultValue": "[]",
         "filePath": "example-file-relative-path",
         "language": "typescript",
-        "nodeId": "150f1262-3e74-4f5b-a838-8edac9922d56",
+        "nodeId": "969f1099-46b3-4f3d-9d79-a77a1bd37863",
         "nodeKind": "property",
         "startLine": 19,
         "endLine": 19
@@ -250,10 +250,10 @@
     ],
     "methods": [
       {
-        "nodeId": "96208525-053a-4f51-bdcf-3a998239e348",
+        "nodeId": "3de290cb-8533-466b-8391-3ae48137e040",
         "filePath": "example-file-relative-path",
         "language": "typescript",
-        "parentNodeId": "ca004357-2099-43c1-bc23-f76bb8e2e922",
+        "parentNodeId": "41ab517f-5178-4a87-82ee-61f45e844d91",
         "nodeKind": "method",
         "name": "addUser",
         "qualifiedName": "UserRegistry.addUser",
@@ -271,17 +271,17 @@
             "filePath": "example-file-relative-path",
             "language": "typescript",
             "nodeKind": "parameter",
-            "nodeId": "589636f8-5095-4480-86d5-faeb5124e204",
+            "nodeId": "8c53bed5-abd6-4a26-90b6-f26b221b845a",
             "startLine": 22,
             "endLine": 22
           }
         ]
       },
       {
-        "nodeId": "a064a604-9000-4505-8d49-3bc303adc89f",
+        "nodeId": "349c3dab-1b43-412c-bdeb-721123e1cb44",
         "filePath": "example-file-relative-path",
         "language": "typescript",
-        "parentNodeId": "ca004357-2099-43c1-bc23-f76bb8e2e922",
+        "parentNodeId": "41ab517f-5178-4a87-82ee-61f45e844d91",
         "nodeKind": "method",
         "name": "findUserById",
         "qualifiedName": "UserRegistry.findUserById",
@@ -299,7 +299,7 @@
             "filePath": "example-file-relative-path",
             "language": "typescript",
             "nodeKind": "parameter",
-            "nodeId": "8510067c-fb8d-46f1-a4e4-f1301643070f",
+            "nodeId": "7f00e70e-2db9-445f-bbd6-3dcb32dd43f7",
             "startLine": 28,
             "endLine": 28
           }
@@ -310,8 +310,8 @@
     "sourceText": "class UserRegistry {\r\n    // Private property restricted to this class\r\n    private users: User[] = [];\r\n\r\n    // Method with typed parameters and void return type\r\n    public addUser(newUser: User): void {\r\n        this.users.push(newUser);\r\n        console.log(`User ${newUser.name} added successfully.`);\r\n    }\r\n\r\n    // Method returning a specific User or undefined if not found\r\n    public findUserById(id: number): User | undefined {\r\n        return this.users.find(user => user.id === id);\r\n    }\r\n}"
   },
   {
-    "nodeId": "96af40f1-3803-4891-b2db-f52fb6f9f418",
-    "parentNodeId": "caf53510-d727-44b4-b2ca-2f00b37df8d8",
+    "nodeId": "1fd126d5-a39c-4d49-818a-e0fea45c05d1",
+    "parentNodeId": "b6cf305b-3bfb-44a9-8288-98db2acd8ae4",
     "endLine": 40,
     "startLine": 34,
     "filePath": "example-file-relative-path",
@@ -329,7 +329,7 @@
         "filePath": "example-file-relative-path",
         "language": "typescript",
         "nodeKind": "parameter",
-        "nodeId": "0b9065f2-2e46-4992-858b-f138c1b24f46",
+        "nodeId": "d4a77776-2a27-4bf0-96b3-58b6c5bb0238",
         "startLine": 34,
         "endLine": 34
       }
@@ -338,10 +338,10 @@
     "qualifiedName": "formatResponse"
   },
   {
-    "nodeId": "d9ba08fa-28d9-4e4d-af94-35479e893013",
+    "nodeId": "f8cf511e-e034-46e6-841b-d8ad928a3c55",
     "language": "typescript",
     "filePath": "example-file-relative-path",
-    "parentNodeId": "96af40f1-3803-4891-b2db-f52fb6f9f418",
+    "parentNodeId": "1fd126d5-a39c-4d49-818a-e0fea45c05d1",
     "nodeKind": "statement",
     "stmtType": "block",
     "text": "{\r\n    return {\r\n        status: \"success\",\r\n        data: data,\r\n        timestamp: Date.now()\r\n    };\r\n}",
@@ -349,10 +349,10 @@
     "endLine": 40
   },
   {
-    "nodeId": "38fc9076-57e9-4d6a-838b-d9e5920c5d2f",
+    "nodeId": "24090528-51e2-46d5-9925-24be165c5117",
     "language": "typescript",
     "filePath": "example-file-relative-path",
-    "parentNodeId": "d9ba08fa-28d9-4e4d-af94-35479e893013",
+    "parentNodeId": "f8cf511e-e034-46e6-841b-d8ad928a3c55",
     "nodeKind": "statement",
     "stmtType": "return",
     "text": "return {\r\n        status: \"success\",\r\n        data: data,\r\n        timestamp: Date.now()\r\n    };",
@@ -360,21 +360,21 @@
     "endLine": 39
   },
   {
-    "nodeId": "d5e186da-9b38-410f-88fe-280945053f8b",
+    "nodeId": "b97db6d6-fccc-42e7-8430-071108263a78",
     "filePath": "example-file-relative-path",
     "language": "typescript",
     "nodeKind": "variableDeclaration",
-    "parentNodeId": "caf53510-d727-44b4-b2ca-2f00b37df8d8",
+    "parentNodeId": "b6cf305b-3bfb-44a9-8288-98db2acd8ae4",
     "declarationKind": "const",
     "startLine": 45,
     "endLine": 45,
     "declarators": [
       {
-        "nodeId": "c872dff2-6f06-4fff-8b7e-902470ce9af6",
+        "nodeId": "ec0b1d85-9217-43f0-8a3d-9aa5cf27e278",
         "filePath": "example-file-relative-path",
         "language": "typescript",
         "nodeKind": "variableDeclarator",
-        "parentNodeId": "d5e186da-9b38-410f-88fe-280945053f8b",
+        "parentNodeId": "b97db6d6-fccc-42e7-8430-071108263a78",
         "name": "registry",
         "qualifiedName": "registry",
         "startLine": 45,
@@ -389,21 +389,21 @@
     "sourceText": "const registry = new UserRegistry();"
   },
   {
-    "nodeId": "9235bf4f-24c5-452e-920b-0dd187cf0b22",
+    "nodeId": "8815c0d0-72e8-4179-bbab-003d52deb0fa",
     "filePath": "example-file-relative-path",
     "language": "typescript",
     "nodeKind": "variableDeclaration",
-    "parentNodeId": "caf53510-d727-44b4-b2ca-2f00b37df8d8",
+    "parentNodeId": "b6cf305b-3bfb-44a9-8288-98db2acd8ae4",
     "declarationKind": "const",
     "startLine": 48,
     "endLine": 54,
     "declarators": [
       {
-        "nodeId": "160335de-1789-42b0-b947-9c77cbf5ab22",
+        "nodeId": "c895542c-816f-4352-92fc-d92b0e01f25b",
         "filePath": "example-file-relative-path",
         "language": "typescript",
         "nodeKind": "variableDeclarator",
-        "parentNodeId": "9235bf4f-24c5-452e-920b-0dd187cf0b22",
+        "parentNodeId": "8815c0d0-72e8-4179-bbab-003d52deb0fa",
         "name": "sampleUser",
         "qualifiedName": "sampleUser",
         "startLine": 48,
@@ -418,10 +418,10 @@
     "sourceText": "const sampleUser: User = {\r\n    id: 101,\r\n    name: \"Alex Rivera\",\r\n    email: \"alex@example.com\",\r\n    role: \"admin\",\r\n    isActive: true\r\n};"
   },
   {
-    "nodeId": "9e34f555-b24e-49f8-8f48-338668cb3ba9",
+    "nodeId": "0fc86398-9e86-4ff2-ad40-36f43bcc8268",
     "language": "typescript",
     "filePath": "example-file-relative-path",
-    "parentNodeId": "caf53510-d727-44b4-b2ca-2f00b37df8d8",
+    "parentNodeId": "b6cf305b-3bfb-44a9-8288-98db2acd8ae4",
     "nodeKind": "statement",
     "stmtType": "expression",
     "text": "registry.addUser(sampleUser);",
@@ -429,21 +429,21 @@
     "endLine": 57
   },
   {
-    "nodeId": "a5277d29-da12-4f8f-b6eb-c2fa8f903d63",
+    "nodeId": "b70d58f3-c2cd-49bf-814f-bb5b708e88f8",
     "filePath": "example-file-relative-path",
     "language": "typescript",
     "nodeKind": "variableDeclaration",
-    "parentNodeId": "caf53510-d727-44b4-b2ca-2f00b37df8d8",
+    "parentNodeId": "b6cf305b-3bfb-44a9-8288-98db2acd8ae4",
     "declarationKind": "const",
     "startLine": 60,
     "endLine": 60,
     "declarators": [
       {
-        "nodeId": "a2194831-b665-453b-8df1-e1153db546f9",
+        "nodeId": "5535df44-a043-4715-bbc9-89fa0a7c230a",
         "filePath": "example-file-relative-path",
         "language": "typescript",
         "nodeKind": "variableDeclarator",
-        "parentNodeId": "a5277d29-da12-4f8f-b6eb-c2fa8f903d63",
+        "parentNodeId": "b70d58f3-c2cd-49bf-814f-bb5b708e88f8",
         "name": "apiResponse",
         "qualifiedName": "apiResponse",
         "startLine": 60,
@@ -458,10 +458,10 @@
     "sourceText": "const apiResponse = formatResponse<User>(sampleUser);"
   },
   {
-    "nodeId": "3330eea2-762a-46d8-9f32-fa50144c3287",
+    "nodeId": "fe664c96-d91c-4bbe-90f9-3eb33ef5eb17",
     "language": "typescript",
     "filePath": "example-file-relative-path",
-    "parentNodeId": "caf53510-d727-44b4-b2ca-2f00b37df8d8",
+    "parentNodeId": "b6cf305b-3bfb-44a9-8288-98db2acd8ae4",
     "nodeKind": "statement",
     "stmtType": "expression",
     "text": "console.log(\"API Payload:\", apiResponse);",

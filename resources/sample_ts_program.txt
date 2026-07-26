@@ -1,0 +1,62 @@
+// 1. Defining an Interface to enforce an object structure
+interface User {
+    id: number;
+    name: string;
+    email: string;
+    role: "admin" | "user" | "guest"; // Union type restricting values
+    isActive: boolean;
+}
+
+// 2. Defining a Type Alias for flexible data definitions
+type ServerResponse<T> = {
+    status: "success" | "error";
+    data: T;
+    timestamp: number;
+};
+
+// 3. Implementing a Class with explicit visibility modifiers
+class UserRegistry {
+    // Private property restricted to this class
+    private users: User[] = [];
+
+    // Method with typed parameters and void return type
+    public addUser(newUser: User): void {
+        this.users.push(newUser);
+        console.log(`User ${newUser.name} added successfully.`);
+    }
+
+    // Method returning a specific User or undefined if not found
+    public findUserById(id: number): User | undefined {
+        return this.users.find(user => user.id === id);
+    }
+}
+
+// 4. Utilizing Generics for reusable, type-safe functions
+function formatResponse<T>(data: T): ServerResponse<T> {
+    return {
+        status: "success",
+        data: data,
+        timestamp: Date.now()
+    };
+}
+
+// --- Executing the Code ---
+
+// Instantiating the class
+const registry = new UserRegistry();
+
+// Creating a typed object adhering to the User interface
+const sampleUser: User = {
+    id: 101,
+    name: "Alex Rivera",
+    email: "alex@example.com",
+    role: "admin",
+    isActive: true
+};
+
+// Adding the user to our registry
+registry.addUser(sampleUser);
+
+// Simulating an API response payload using our Generic function
+const apiResponse = formatResponse<User>(sampleUser);
+console.log("API Payload:", apiResponse);
