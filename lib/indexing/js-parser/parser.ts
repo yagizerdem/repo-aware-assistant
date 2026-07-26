@@ -78,6 +78,7 @@ class Parser {
           parentNode,
         );
         this.irNodes.push(fnNode);
+        nextParentNode = fnNode;
       } else if (child.type == "class_declaration") {
         const classNode: ClassNode = await this.parseClass(child, parentNode);
         this.irNodes.push(classNode);
