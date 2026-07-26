@@ -1,4 +1,4 @@
-import type { AbstractNode } from "../../common/abstract-node";
+import type { AbstractNode } from "@ir/common/abstract-node";
 
 type StatementType =
   | "break"

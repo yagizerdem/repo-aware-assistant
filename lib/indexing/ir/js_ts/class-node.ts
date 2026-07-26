@@ -1,6 +1,6 @@
-import { TypeReference } from "../../../../types/type-referance";
-import { AbstractNode } from "../../common/abstract-node";
-import { LanguageSpecificClassData } from "../../common/language-specific-class-data";
+import { TypeReference } from "@lib/types/type-referance";
+import { AbstractNode } from "@ir/common/abstract-node";
+import { LanguageSpecificClassData } from "@ir/common/language-specific-class-data";
 import { FunctionNode } from "./function-node";
 import { ParameterNode } from "./parameter-node";
 

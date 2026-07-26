@@ -1,5 +1,5 @@
-import { TypeReference } from "../../../../types/type-referance";
-import type { AbstractNode } from "../../common/abstract-node";
+import { TypeReference } from "@lib/types/type-referance";
+import type { AbstractNode } from "@ir/common/abstract-node";
 
 type VariableDeclarationKind =
   | "const"

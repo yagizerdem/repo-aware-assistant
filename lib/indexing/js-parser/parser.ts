@@ -1,26 +1,26 @@
 import TreeSitterParser from "tree-sitter";
 import JavaScript from "tree-sitter-javascript";
-import { FunctionNode } from "../ir/js/ts/function-node";
-import { ClassNode, ClassPropertyNode } from "../ir/js/ts/class-node";
-import { ParseContext } from "../parse-context";
-import { ParameterNode } from "../ir/js/ts/parameter-node";
-import { AbstractNode } from "../ir/common/abstract-node";
-import { FileNode } from "../ir/js/ts/file-node";
-import { ImportNode, ImportSpecifierNode } from "../ir/js/ts/import-node";
-import { ExportNode, ExportSpecifierNode } from "../ir/js/ts/export-node";
+import type { FunctionNode } from "@ir/js_ts/function-node";
+import type { ClassNode, ClassPropertyNode } from "@ir/js_ts/class-node";
+import type { ParseContext } from "../parse-context";
+import type { ParameterNode } from "@ir/js_ts/parameter-node";
+import type { AbstractNode } from "@ir/common/abstract-node";
+import type { FileNode } from "@ir/js_ts/file-node";
+import type { ImportNode, ImportSpecifierNode } from "@ir/js_ts/import-node";
+import type { ExportNode, ExportSpecifierNode } from "@ir/js_ts/export-node";
 import {
-  VariableDeclarationKind,
-  VariableDeclarationNode,
-  VariableDeclaratorNode,
-} from "../ir/js/ts/variable-node";
-import { RequireNode } from "../ir/js/ts/require-node";
+  type VariableDeclarationKind,
+  type VariableDeclarationNode,
+  type VariableDeclaratorNode,
+} from "@ir/js_ts/variable-node";
+import type { RequireNode } from "@ir/js_ts/require-node";
 import {
   mapStatementType,
-  StatementNode,
   statementTypes,
-  TreeSitterStatementType,
-} from "../ir/js/ts/statement-node";
-import { UnknownNode } from "../ir/js/ts/unknown-node";
+  type StatementNode,
+  type TreeSitterStatementType,
+} from "../ir/js_ts/statement-node";
+import type { UnknownNode } from "@ir/js_ts/unknown-node";
 
 const treeSitterParser = new TreeSitterParser();
 treeSitterParser.setLanguage(

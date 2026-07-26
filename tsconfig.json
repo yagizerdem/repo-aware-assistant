@@ -9,7 +9,13 @@
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,
-    "types": ["node"]
+    "types": ["node"],
+    "rootDirs": ["."],
+    "paths": {
+      "@lib/*": ["./lib/*"],
+      "@indexing/*": ["./lib/indexing/*"],
+      "@ir/*": ["./lib/indexing/ir/*"]
+    }
   },
   "include": ["app.ts", "server.ts", "lib/**/*.ts"],
   "exclude": ["node_modules", "dist", "dev"]
