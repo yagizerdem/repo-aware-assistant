@@ -45,7 +45,7 @@ async function runParser() {
   // );
   const f = parser.irNodes.map((node) => node);
   fs.writeFileSync(
-    "./resources/parsed_ir_nodes.txt",
+    "./resources/parsed_ir_nodes.json",
     JSON.stringify(f, null, 2),
   );
 }
