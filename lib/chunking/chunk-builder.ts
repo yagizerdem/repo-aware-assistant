@@ -1,18 +1,25 @@
-import { AbstractNode } from "@ir/common/abstract-node";
+import type { AbstractNode } from "@ir/common/abstract-node";
 
-function mapChildNodeId(
-  abstractNode: AbstractNode[],
-): Record<string, string[]> {
-  const childNodeIdMap: Record<string, string[]> = {};
-  for (const node of abstractNode) {
-    if (node.parentNodeId) {
-      if (!childNodeIdMap[node.parentNodeId]) {
-        childNodeIdMap[node.parentNodeId] = [];
-      }
-      childNodeIdMap[node.parentNodeId].push(node.nodeId);
-    }
-  }
-  return childNodeIdMap;
+function mapNodesById(
+  nodes: readonly AbstractNode[],
+): Map<string, AbstractNode> {
+  return new Map(nodes.map((node) => [node.nodeId, node]));
 }
 
-export { mapChildNodeId };
+function mapChildNodeIds(
+  nodes: readonly AbstractNode[],
+): Map<string, string[]> {
+  const result = new Map<string, string[]>();
+
+  for (const node of nodes) {
+    if (!node.parentNodeId) {
+      continue;
+    }
+
+    const children = result.get(node.parentNodeId) ?? [];
+    children.push(node.nodeId);
+    result.set(node.parentNodeId, children);
+  }
+
+  return result;
+}
