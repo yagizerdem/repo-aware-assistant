@@ -63,6 +63,8 @@ class Parser {
       nodeId: uuidv4(), // Generate a unique ID for the file node
       startLine: 0,
       endLine: rootNode.endPosition.row,
+      startIndex: 0,
+      endIndex: rootNode.endIndex,
     };
 
     this.irNodes.push(fileNode);
@@ -123,6 +125,8 @@ class Parser {
           startLine: child.startPosition.row,
           parentNodeId: parentNode.nodeId,
           parentTreeSitterType: node.type,
+          startIndex: child.startIndex,
+          endIndex: child.endIndex,
         };
         // this.irNodes.push(unknownNode);
         // nextParentNode = unknownNode;
@@ -182,6 +186,8 @@ class Parser {
               localName,
               startLine: specifierNode.startPosition.row,
               endLine: specifierNode.endPosition.row,
+              startIndex: specifierNode.startIndex,
+              endIndex: specifierNode.endIndex,
             });
           }
         }
@@ -201,6 +207,8 @@ class Parser {
       namespaceImport,
       specifiers,
       sourceText: node.text,
+      startIndex: node.startIndex,
+      endIndex: node.endIndex,
     };
   }
 
@@ -241,6 +249,8 @@ class Parser {
           localName,
           startLine: child.startPosition.row,
           endLine: child.endPosition.row,
+          startIndex: child.startIndex,
+          endIndex: child.endIndex,
         });
       }
     }
@@ -267,6 +277,8 @@ class Parser {
       endLine: node.endPosition.row,
       specifiers,
       sourceText: node.text,
+      startIndex: node.startIndex,
+      endIndex: node.endIndex,
     };
   }
 
@@ -299,11 +311,13 @@ class Parser {
       methods: [],
       constructors: [],
       sourceText: node.text,
+      startIndex: node.startIndex,
+      endIndex: node.endIndex,
     };
 
     const heritageNode = node.childForFieldName("heritage");
     if (heritageNode && heritageNode.text.startsWith("extends ")) {
-      classNode.extends = ["class"];
+      classNode.extends = heritageNode.text.replace(/^extends\s+/, "");
     }
 
     const classBodyNode = node.childForFieldName("body");
@@ -365,6 +379,8 @@ class Parser {
       endLine: node.endPosition.row,
       declarators: [],
       sourceText: node.text,
+      startIndex: node.startIndex,
+      endIndex: node.endIndex,
     };
 
     for (const child of node.children) {
@@ -418,6 +434,8 @@ class Parser {
         node.type === "variable_declarator" ? valueNode?.text : undefined,
       initializerKind: requireCall ? "require" : "expression",
       requiredModule: requireCall?.moduleName,
+      startIndex: node.startIndex,
+      endIndex: node.endIndex,
     };
 
     if (!requireCall) {
@@ -437,6 +455,8 @@ class Parser {
         startLine: valueNode?.startPosition.row ?? node.startPosition.row,
         endLine: valueNode?.endPosition.row ?? node.endPosition.row,
         sourceText: valueNode?.text ?? node.text,
+        startIndex: valueNode?.startIndex ?? node.startIndex,
+        endIndex: valueNode?.endIndex ?? node.endIndex,
       },
     };
   }
@@ -558,6 +578,8 @@ class Parser {
       parameters: parametersNode
         ? await this.extractParameters(parametersNode)
         : [],
+      startIndex: node.startIndex,
+      endIndex: node.endIndex,
     };
   }
 
@@ -587,6 +609,8 @@ class Parser {
       nodeKind: "property",
       startLine: node.startPosition.row,
       endLine: node.endPosition.row,
+      startIndex: node.startIndex,
+      endIndex: node.endIndex,
     };
   }
 
@@ -607,6 +631,8 @@ class Parser {
           nodeId: uuidv4(),
           startLine: param.startPosition.row,
           endLine: param.endPosition.row,
+          startIndex: param.startIndex,
+          endIndex: param.endIndex,
         });
         continue;
       }
@@ -626,6 +652,8 @@ class Parser {
             nodeKind: "parameter",
             startLine: param.startPosition.row,
             endLine: param.endPosition.row,
+            startIndex: param.startIndex,
+            endIndex: param.endIndex,
           });
         }
         continue;
@@ -645,6 +673,8 @@ class Parser {
             nodeKind: "parameter",
             startLine: param.startPosition.row,
             endLine: param.endPosition.row,
+            startIndex: param.startIndex,
+            endIndex: param.endIndex,
           });
         }
         continue;
@@ -660,6 +690,8 @@ class Parser {
           nodeKind: "parameter",
           startLine: param.startPosition.row,
           endLine: param.endPosition.row,
+          startIndex: param.startIndex,
+          endIndex: param.endIndex,
         });
       }
     }
@@ -682,6 +714,8 @@ class Parser {
       text: node.text,
       startLine: node.startPosition.row,
       endLine: node.endPosition.row,
+      startIndex: node.startIndex,
+      endIndex: node.endIndex,
     };
 
     return statementNode;

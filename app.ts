@@ -5,6 +5,7 @@ import { ParseContext } from "./lib/indexing/parse-context";
 import { getAllowedFiles } from "./lib/indexing/repo";
 import { getFileSize, getLineCount } from "./lib/util/file-util";
 import fs from "fs";
+import { mapChildNodeId } from "./lib/chunking/chunk-builder";
 
 // getAllowedFiles("./dev/null", "./dev/null", [".js", ".ts"]).then(
 //   async (files) => {
@@ -39,6 +40,7 @@ const parser = new TsParser(context);
 
 async function runParser() {
   await parser.parse();
+  console.log(mapChildNodeId(parser.irNodes));
   // console.log(
   //   "Parsed IR Nodes:",
   //   parser.irNodes.map((node) => node),

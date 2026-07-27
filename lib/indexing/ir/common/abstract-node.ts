@@ -8,6 +8,8 @@ interface AbstractNode {
   startLine: number;
   endLine: number;
   parentNodeId?: string;
+  startIndex: number;
+  endIndex: number;
 }
 
 export type { AbstractNode };
