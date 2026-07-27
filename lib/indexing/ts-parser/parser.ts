@@ -496,6 +496,18 @@ class Parser {
       ),
     };
 
+    const heritageNode = node.children.find(
+      (child) => child.type === "class_heritage",
+    );
+    const extendsNode = heritageNode?.children.find(
+      (child) => child.type === "extends_clause",
+    );
+    if (extendsNode) {
+      classNode.extends =
+        extendsNode.childForFieldName("value")?.text ??
+        extendsNode.text.replace(/^extends\s+/, "");
+    }
+
     const classBodyNode = node.childForFieldName("body");
     if (!classBodyNode) {
       return classNode;

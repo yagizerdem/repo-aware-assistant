@@ -21,8 +21,7 @@ interface ClassNode extends AbstractNode {
 
   modifiers: string[];
 
-  extends?: TypeReference[];
-  implements?: TypeReference[];
+  extends?: string;
   typeParameters?: string[];
 
   properties: ClassPropertyNode[];

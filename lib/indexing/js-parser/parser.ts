@@ -303,7 +303,7 @@ class Parser {
 
     const heritageNode = node.childForFieldName("heritage");
     if (heritageNode && heritageNode.text.startsWith("extends ")) {
-      classNode.extends = ["class"];
+      classNode.extends = heritageNode.text.replace(/^extends\s+/, "");
     }
 
     const classBodyNode = node.childForFieldName("body");
